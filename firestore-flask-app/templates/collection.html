@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ collection_name|title }} Collection</h1>
+    <button class="btn btn-success" onclick="bulkSummarize('{{ collection_name }}')">
+        Bulk Summarize All
+    </button>
+</div>
+
+{% if documents %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                {% if documents[0] %}
+                    {% for key in documents[0].keys() %}
+                        {% if key != 'id' %}
+                            <th>{{ key|title }}</th>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for document in documents %}
+            <tr>
+                <td>{{ document.id }}</td>
+                {% for key, value in document.items() %}
+                    {% if key != 'id' %}
+                        <td>
+                            {% if value|string|length > 50 %}
+                                {{ value|string|truncate(50) }}
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+                <td>
+                    <a href="{{ url_for('view_document', collection_name=collection_name, doc_id=document.id) }}" 
+                       class="btn btn-sm btn-primary">View Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <h4>No Documents Found</h4>
+    <p>This collection appears to be empty or doesn't exist.</p>
+</div>
+{% endif %}
+
+<script>
+async function bulkSummarize(collectionName) {
+    try {
+        const response = await axios.get(`/bulk-summarize/${collectionName}`);
+        if (response.data.success) {
+            alert(`Successfully processed ${response.data.processed_documents} documents!`);
+            location.reload();
+        }
+    } catch (error) {
+        alert('Error during bulk summarization: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

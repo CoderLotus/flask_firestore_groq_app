@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Firestore Collections</h1>
+        <p class="lead">Select a collection to view and summarize data</p>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Clients</h5>
+                        <p class="card-text">View client information and generate summaries</p>
+                        <a href="{{ url_for('view_collection', collection_name='clients') }}" class="btn btn-primary">View Clients</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Articles</h5>
+                        <p class="card-text">Browse articles with AI-powered summaries</p>
+                        <a href="{{ url_for('view_collection', collection_name='articles') }}" class="btn btn-primary">View Articles</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Feedback</h5>
+                        <p class="card-text">Analyze customer feedback with summaries</p>
+                        <a href="{{ url_for('view_collection', collection_name='feedback') }}" class="btn btn-primary">View Feedback</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

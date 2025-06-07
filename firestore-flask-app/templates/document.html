@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Document Details</h1>
+        <p class="text-muted">Collection: {{ collection_name }} | ID: {{ doc_id }}</p>
+        
+        <div class="card">
+            <div class="card-body">
+                {% for key, value in document.items() %}
+                    {% if key != 'id' %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ key|title }}:</label>
+                            {% if key.endswith('_summary') %}
+                                <div class="alert alert-info">
+                                    <small class="text-muted">AI Summary:</small><br>
+                                    {{ value }}
+                                </div>
+                            {% else %}
+                                <div class="form-control" readonly style="min-height: 60px;">{{ value }}</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>AI Summarization</h5>
+            </div>
+            <div class="card-body">
+                <p>Select fields to summarize using Groq AI:</p>
+                {% for key, value in document.items() %}
+                    {% if key != 'id' and not key.endswith('_summary') and value|string|length > 20 %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="{{ key }}" id="field_{{ key }}">
+                            <label class="form-check-label" for="field_{{ key }}">
+                                {{ key|title }}
+                            </label>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                <button class="btn btn-primary mt-3" onclick="summarizeSelected()">
+                    Generate Summaries
+                </button>
+                
+                <div id="summary-results" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function summarizeSelected() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    const fields = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (fields.length === 0) {
+        alert('Please select at least one field to summarize');
+        return;
+    }
+    
+    try {
+        const response = await axios.post('/summarize', {
+            collection_name: '{{ collection_name }}',
+            doc_id: '{{ doc_id }}',
+            fields: fields
+        });
+        
+        if (response.data.success) {
+            const resultsDiv = document.getElementById('summary-results');
+            let html = '<div class="alert alert-success">Summaries generated successfully!</div>';
+            
+            for (const [field, summary] of Object.entries(response.data.summaries)) {
+                html += `<div class="mb-2">
+                    <strong>${field}:</strong><br>
+                    <small class="text-muted">${summary}</small>
+                </div>`;
+            }
+            
+            resultsDiv.innerHTML = html;
+            
+            // Reload page after 3 seconds to show updated summaries
+            setTimeout(() => location.reload(), 3000);
+        }
+    } catch (error) {
+        alert('Error generating summaries: ' + error.message);
+    }
+}
+</script>
+{% endblock %}
